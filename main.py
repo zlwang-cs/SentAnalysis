@@ -14,6 +14,7 @@ from tensorboardX import SummaryWriter
 
 import models.evaluation as eval
 import models.loss as loss
+from models.model import BertBasedModel
 from train import train
 from utils.dataset import load_data
 
@@ -48,10 +49,8 @@ def set_logger():
     log.addHandler(stream_handler)
 
     time = datetime.now().strftime("%b%d-%H%M%S")
-    data_tag = config.dataset.tag
     sp_tag = '' if config.run.tag is None else f'-[{config.run.tag}]'
-    feature_tag = ''.join([f[0] for f in config.model.feature])
-    tag = f'{data_tag}-{config.model.name}-{feature_tag}-{config.model.fusion}' + sp_tag
+    tag = f'{config.model.name}' + sp_tag
     logger_path = '{}-{}'.format(tag, time)
 
     log.setLevel(logging.INFO)
@@ -80,7 +79,7 @@ def get_bert_config(bert_path):
     return EasyDict(bert_config)
 
 
-model_dict = {}
+model_dict = {'BertBasedModel': BertBasedModel}
 
 
 if __name__ == '__main__':
@@ -94,6 +93,7 @@ if __name__ == '__main__':
     root_path = set_logger()
     writer = get_writer(folder=os.path.join(root_path, "tensorboard"))
     config.tensorboard = writer
+    config.model.bert.config = get_bert_config(config.model.bert.weight_dir)
 
     logging.info('Running begin!')
 
@@ -101,8 +101,6 @@ if __name__ == '__main__':
 
     loss_fn = getattr(loss, config.loss.func)(config)
     eval_fn = getattr(eval, config.eval.func)(config)
-
-    logging.info('Running mode: {}'.format(config.run.mode))
 
     train_loader, val_loader = load_data(config)
     train(model, loss_fn, eval_fn, train_loader, val_loader, config, root_path)

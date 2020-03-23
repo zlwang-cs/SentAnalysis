@@ -1,79 +1,33 @@
 run:
   tag:
 
-  device: cuda
+  device: cpu
   random_seed: 12345
 
-  mode: train
-  mode_path:
-
-  batch_size: 1
-  total_iter: 10000
+  batch_size: 10
+  total_iter: 100
   print_per_iter: 1
   num_workers: 4
-
-  clip_norm: 0.1
 
   learning_rate: 0.01
   learning_rate_decay: 0.99
   learning_rate_decay_step: 10
 
-linklink:
-  sync: true
-  dynamic_loss_scale: false
-  static_loss_scale: 64
-
 dataset:
-  tag: funsd
-  path: data/funsd-dataset/
-#  tag: hospital
-#  path: data/hospital-dataset/
-
-  neg_sample: 50
-  max_try: 10
+  path: data/IMDB-test/
+  category: 2
 
 model:
-  name: JointModel
-
-  fusion: ConcatFusion
-
-  feature:
-    - nlp
-#    - position
-#    - vision
+  name: BertBasedModel
 
   bert:
-    weight_dir: ./data/bert-weight/bert-large-uncased-whole-word-masking/
-#    weight_dir: ./data/bert-weight/chinese_roberta_wwm_large_ext_pytorch/
+    weight_dir: /home/wangzilong/Documents/Code/DocStruct/data/bert-weight/bert-large-uncased-whole-word-masking
     freeze: true
 
-  position:
-    feature_dim: 8
-    fc_dim: 100
-
-  vision:
-    name: resnet50
-    output_dim: 1024
-    use_sync_bn: true
-    pre_trained: true
-
-    dropout: 0
-    attention: false
+  fc: 512
 
 loss:
-  func: NegSamplingLoss
+  func: CrossEntropy
 
 eval:
-  func: JointEval
-
-  joint_eval:
-    sub:
-      - Reconstruct
-      - TopKAcc
-    eval_sub: Reconstruct
-
-  top_k_acc:
-    k:
-      - 1
-      - 2
-      - 5
+  func: F1

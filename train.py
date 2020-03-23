@@ -71,7 +71,6 @@ def train(model, loss_fn, eval_fn, train_loader, val_loader, config, root_path):
                 config.tensorboard.add_scalar(f'valid/eval/{r}', val_eval[r], i)
 
             val_loss_msg = ' '.join('{}: {:.4f}'.format(k, v) for k, v in val_loss.items())
-
             val_eval_msg = ' '.join('{}: {:.4f}'.format(k, v) for k, v in val_eval.items())
 
             msg = "Iter: [{}/%d] val [{}] [{}] best [{:.4f}] {}" % config.run.total_iter

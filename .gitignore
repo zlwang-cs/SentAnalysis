@@ -3,5 +3,6 @@
 .vscode/
 
 data/*
+!data/processing/
 
 log/*
