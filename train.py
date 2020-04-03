@@ -56,33 +56,28 @@ def train(model, loss_fn, eval_fn, train_loader, val_loader, config, root_path):
             optimizer.step()
             scheduler.step(i)
 
-            if i % config.run.print_per_iter != 0:
-                continue
+            train_eval = eval_fn(output, batch)
 
-            val_loss, val_eval = validate(model, loss_fn, eval_fn, val_loader, config)
+            best = '*' if train_eval['eval'] > best_eval else ''
+            if train_eval['eval'] > best_eval:
+                best_eval, best_model = train_eval['eval'], copy.deepcopy(model.state_dict())
 
-            best = '*' if val_eval['eval'] > best_eval else ''
-            if val_eval['eval'] > best_eval:
-                best_eval, best_model = val_eval['eval'], copy.deepcopy(model.state_dict())
+            loss_msg = ' '.join('{}: {:.4f}'.format(k, v) for k, v in loss.items())
+            eval_msg = ' '.join('{}: {:.4f}'.format(k, v) for k, v in train_eval.items())
+            msg = "Iter: [{}/%d] val [{}] [{}] best [{:.4f}] {}" % config.run.total_iter
+            logging.info(msg.format(i, loss_msg, eval_msg, best_eval, best))
 
             for r in config.loss.results:
-                config.tensorboard.add_scalar(f'valid/loss/{r}', val_loss[r], i)
+                config.tensorboard.add_scalar(f'valid/loss/{r}', loss[r], i)
             for r in config.eval.results:
-                config.tensorboard.add_scalar(f'valid/eval/{r}', val_eval[r], i)
+                config.tensorboard.add_scalar(f'valid/eval/{r}', train_eval[r], i)
 
-            val_loss_msg = ' '.join('{}: {:.4f}'.format(k, v) for k, v in val_loss.items())
-            val_eval_msg = ' '.join('{}: {:.4f}'.format(k, v) for k, v in val_eval.items())
-
-            msg = "Iter: [{}/%d] val [{}] [{}] best [{:.4f}] {}" % config.run.total_iter
-            logging.info(msg.format(i, val_loss_msg, val_eval_msg, best_eval, best))
-
-            if val_eval['eval'] >= best_eval:
+            if train_eval['eval'] >= best_eval:
                 torch.save(model.state_dict(), os.path.join(root_path, 'model.pt'))
 
     except KeyboardInterrupt:
-        logging.info('KeyboardInterrupt best val acc: {:.4f}'.format(best_eval))
+        logging.info('KeyboardInterrupt best val eval: {:.4f}'.format(best_eval))
     except Exception as e:
         logging.exception(e)
 
-    logging.info('Train end best val acc: {:.4f}'.format(best_eval))
-
+    logging.info('Train end best eval: {:.4f}'.format(best_eval))

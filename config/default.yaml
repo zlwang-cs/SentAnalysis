@@ -4,7 +4,7 @@ run:
   device: cpu
   random_seed: 12345
 
-  batch_size: 10
+  batch_size: 8
   total_iter: 100
   print_per_iter: 1
   num_workers: 4
