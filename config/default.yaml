@@ -6,7 +6,7 @@ run:
 
   batch_size: 8
   total_iter: 100
-  print_per_iter: 1
+  save_per_iter: 10
   num_workers: 4
 
   learning_rate: 0.01
@@ -14,7 +14,7 @@ run:
   learning_rate_decay_step: 10
 
 dataset:
-  path: data/IMDB-test/
+  path: data/IMDB/
   category: 2
 
 model:

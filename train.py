@@ -75,7 +75,7 @@ def train(model, loss_fn, eval_fn, train_loader, val_loader, config, root_path):
             # if train_eval['eval'] >= best_eval:
             #     torch.save(model.state_dict(), os.path.join(root_path, 'model.pt'))
 
-            if i % 100 == 0:
+            if i % config.run.save_per_iter == 0:
                 torch.save(model.state_dict(), os.path.join(root_path, f'model-{i}.pt'))
 
     except KeyboardInterrupt:

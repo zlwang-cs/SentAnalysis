@@ -72,7 +72,7 @@ def set_logger():
     stream_handler.setFormatter(log_format)
     log.addHandler(stream_handler)
 
-    logger_path = f'TEST-[{args.dir}]'
+    logger_path = f'TEST-[{args.dir}]-[{args.weight}]'
 
     log.setLevel(logging.INFO)
     os.makedirs(os.path.join('log', logger_path))
@@ -108,8 +108,8 @@ if __name__ == '__main__':
     loss_fn = getattr(loss, config.loss.func)(config)
     eval_fn = getattr(eval, config.eval.func)(config)
 
-    # train_loader, val_loader = load_data(config)
-    # val_loss, val_eval = test(model, loss_fn, eval_fn, val_loader, config)
-    #
-    # print(val_loss)
-    # print(val_eval)
+    train_loader, val_loader = load_data(config)
+    val_loss, val_eval = test(model, loss_fn, eval_fn, val_loader, config)
+
+    print(val_loss)
+    print(val_eval)
