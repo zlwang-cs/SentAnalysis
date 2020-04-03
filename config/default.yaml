@@ -24,6 +24,9 @@ model:
     weight_dir: /home/wangzilong/Documents/Code/DocStruct/data/bert-weight/bert-large-uncased-whole-word-masking
     freeze: true
 
+  lstm:
+    hidden_size: 1024
+
   fc: 512
 
 loss:

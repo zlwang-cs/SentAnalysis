@@ -16,7 +16,10 @@ class BertBasedModel(nn.Module):
             for p in self.bert_layer.parameters():
                 p.requires_grad = False
 
-        self.fc = nn.Sequential(nn.Linear(config.model.bert.config.hidden_size, config.model.fc),
+        self.lstm = nn.LSTM(input_size=config.model.bert.config.hidden_size, hidden_size=config.model.lstm.hidden_size,
+                            bidirectional=True)
+
+        self.fc = nn.Sequential(nn.Linear(config.model.lstm.hidden_size * 2, config.model.fc),
                                 nn.ReLU(),
                                 nn.Linear(config.model.fc, config.dataset.category))
 
@@ -32,8 +35,9 @@ class BertBasedModel(nn.Module):
         start = 0
         for n in sent_num:
             feat = bert_cls_hidden[start, start + n]
-            max_feat, _ = feat.max(0)
-            output.append(self.fc(max_feat))
+            # max_feat, _ = feat.max(0)
+            feat = self.lstm(feat)
+            output.append(self.fc(feat))
 
             start += n
 
