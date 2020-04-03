@@ -4,7 +4,7 @@ run:
   device: cpu
   random_seed: 12345
 
-  batch_size: 8
+  batch_size: 2
   total_iter: 100
   save_per_iter: 10
   num_workers: 4
@@ -14,7 +14,7 @@ run:
   learning_rate_decay_step: 10
 
 dataset:
-  path: data/IMDB/
+  path: data/IMDB-test/
   category: 2
 
 model:
@@ -22,6 +22,7 @@ model:
 
   bert:
     weight_dir: /home/wangzilong/Documents/Code/DocStruct/data/bert-weight/bert-large-uncased-whole-word-masking
+#    weight_dir: /mnt/lustre/wangzilong/Projects/DocStruct/data/bert-weight/bert-large-uncased-whole-word-masking
     freeze: true
 
   lstm:

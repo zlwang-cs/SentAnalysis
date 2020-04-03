@@ -42,13 +42,14 @@ class MyDataset(Dataset):
 
     def load(self, name):
         ret = []
-        sent_tokenizer = ParaSplit()
+        # sent_tokenizer = ParaSplit()
         max_sentence_length = self.config.model.bert.config.max_position_embeddings
         with open(os.path.join(self.config.dataset.path, name+'.txt')) as fin:
             for line in fin:
                 text, label = line.strip().rsplit('\t', 1)
-                sent = sent_tokenizer.split(text)
-                sent = [self.tokenizer.encode(s, max_length=max_sentence_length) for s in sent]
+                # sent = sent_tokenizer.split(text)
+                # sent = [self.tokenizer.encode(s, max_length=max_sentence_length) for s in sent]
+                sent = self.tokenizer.encode(text, max_length=max_sentence_length)
                 label = int(label)
                 ret.append((sent, label))
         return ret
@@ -64,8 +65,8 @@ def collate_fn(batch):
     sentences, label = zip(*batch)
     sentences, label = list(sentences), list(label)
 
-    sent_num = [len(s) for s in sentences]
-    sentences = reduce(lambda x, y: x + y, sentences)
+    # sent_num = [len(s) for s in sentences]
+    # sentences = reduce(lambda x, y: x + y, sentences)
     sentences = list(map(lambda x: torch.tensor(x, dtype=torch.long), sentences))
     sentences = nn.utils.rnn.pad_sequence(sentences, batch_first=True)
 
@@ -73,7 +74,8 @@ def collate_fn(batch):
 
     label = torch.tensor(label, dtype=torch.long)
 
-    return Batch(sentence=sentences, mask=attention_masks, sent_num=sent_num, label=label)
+    return Batch(sentence=sentences, mask=attention_masks, label=label)
+    # return Batch(sentence=sentences, mask=attention_masks, sent_num=sent_num, label=label)
 
 
 class PageSampler(Sampler):
