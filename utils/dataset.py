@@ -131,6 +131,6 @@ def load_data(config):
                                                         shuffle=True)
                               )
 
-    test_loader = DataLoader(test_dataset, batch_size=1, pin_memory=True, collate_fn=collate_fn)
+    test_loader = DataLoader(test_dataset, batch_size=config.run.batch_size, pin_memory=True, collate_fn=collate_fn)
 
     return train_loader, test_loader

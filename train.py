@@ -5,29 +5,29 @@ import os
 import torch
 
 
-def validate(model, loss_fn, eval_func, val_loader, config):
+def validate(model, loss_fn, eval_fn, val_loader, config):
     model.eval()
     with torch.no_grad():
         val_loss, val_eval = {}, {}
-        for r in config.eval.results:
+        for r in eval_fn.result:
             val_eval[r] = []
-        for r in config.loss.results:
+        for r in loss_fn.loss:
             val_loss[r] = []
 
         for batch in val_loader:
             batch = batch.to(device=config.run.device)
             output = model(batch)
             loss = loss_fn(output, batch)
-            eval = eval_func(output, batch)
+            eval = eval_fn(output, batch)
 
-            for r in config.loss.results:
+            for r in loss_fn.loss:
                 val_loss[r].append(loss[r].item())
-            for r in config.eval.results:
+            for r in eval_fn.result:
                 val_eval[r].append(eval[r])
 
-    for r in config.eval.results:
+    for r in eval_fn.result:
         val_eval[r] = sum(val_eval[r]) / len(val_eval[r])
-    for r in config.loss.results:
+    for r in loss_fn.loss:
         val_loss[r] = sum(val_loss[r]) / len(val_loss[r])
 
     return val_loss, val_eval
@@ -64,20 +64,24 @@ def train(model, loss_fn, eval_fn, train_loader, val_loader, config, root_path):
 
             loss_msg = ' '.join('{}: {:.4f}'.format(k, v) for k, v in loss.items())
             eval_msg = ' '.join('{}: {:.4f}'.format(k, v) for k, v in train_eval.items())
-            msg = "Iter: [{}/%d] val [{}] [{}] best [{:.4f}] {}" % config.run.total_iter
+            msg = "Iter: [{}/%d] train [{}] [{}] best [{:.4f}] {}" % config.run.total_iter
             logging.info(msg.format(i, loss_msg, eval_msg, best_eval, best))
 
-            for r in config.loss.results:
+            for r in loss_fn.loss:
                 config.tensorboard.add_scalar(f'valid/loss/{r}', loss[r], i)
-            for r in config.eval.results:
+            for r in eval_fn.result:
                 config.tensorboard.add_scalar(f'valid/eval/{r}', train_eval[r], i)
 
-            if train_eval['eval'] >= best_eval:
-                torch.save(model.state_dict(), os.path.join(root_path, 'model.pt'))
+            # if train_eval['eval'] >= best_eval:
+            #     torch.save(model.state_dict(), os.path.join(root_path, 'model.pt'))
+
+            if i % 100 == 0:
+                torch.save(model.state_dict(), os.path.join(root_path, f'model-{i}.pt'))
 
     except KeyboardInterrupt:
-        logging.info('KeyboardInterrupt best val eval: {:.4f}'.format(best_eval))
+        logging.info('KeyboardInterrupt best train eval: {:.4f}'.format(best_eval))
     except Exception as e:
         logging.exception(e)
 
     logging.info('Train end best eval: {:.4f}'.format(best_eval))
+    torch.save(model.state_dict(), os.path.join(root_path, 'model.pt'))
